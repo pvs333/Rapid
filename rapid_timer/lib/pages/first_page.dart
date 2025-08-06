@@ -4,7 +4,7 @@ import 'package:rapid_timer/pages/settingspage.dart';
 import 'package:rapid_timer/pages/statspage.dart';
 
 class FirstPage extends StatefulWidget{
-  FirstPage({super.key});
+  const FirstPage({super.key});
 
   @override
   State<FirstPage> createState() => _FirstPageState();
@@ -29,7 +29,7 @@ class _FirstPageState extends State<FirstPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Rapid", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text("Rapid", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 32)),
         centerTitle: true,
       ),
       
