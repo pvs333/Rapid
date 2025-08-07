@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rapid_timer/pages/calendarpage.dart';
 import 'package:rapid_timer/pages/homepage.dart';
 import 'package:rapid_timer/pages/settingspage.dart';
 import 'package:rapid_timer/pages/statspage.dart';
@@ -16,6 +17,7 @@ class _FirstPageState extends State<FirstPage> {
   final List pages =[
     HomePage(),
     StatsPage(),
+    CalendarPage(),
     SettingsPage(),
   ];
 
@@ -37,17 +39,22 @@ class _FirstPageState extends State<FirstPage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
         onTap: navigateBar,
+        type : BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.timer),
-            label: 'Home',
+            icon: selectedIndex == 0 ? Icon(Icons.timer) : Icon(Icons.timer_outlined),
+            label: 'Timer',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.show_chart),
             label: 'Stats',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
+            icon:  selectedIndex == 2 ? Icon(Icons.calendar_month) : Icon(Icons.calendar_month_outlined),
+            label: 'Calendar',
+          ),
+          BottomNavigationBarItem(
+            icon:  selectedIndex == 3 ? Icon(Icons.settings) : Icon(Icons.settings_outlined),
             label: 'Settings',
           ),
         ],

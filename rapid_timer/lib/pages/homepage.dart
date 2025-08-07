@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import '../solves_store.dart'; // <-- Import your global store
 
 class HomePage extends StatefulWidget{
   const HomePage({super.key});
@@ -14,41 +12,35 @@ class HomePage extends StatefulWidget{
 class _HomePageState extends State<HomePage> {
   final Stopwatch _stopwatch = Stopwatch();
   Timer? _timer;
-  String _displayTime = '00:00.000';
-  List<Map<String, String>> solves = []; // Now stores time and date
-
+  String _displayTime = '00:00.00';
   int timerState = 0;
+
+  String _scramble = "";
 
   @override
   void initState() {
     super.initState();
-    _loadSolves();
+    SolvesStore().addListener(_onSolvesChanged);
+    _generateScramble();
   }
 
-  Future<File> get _localFile async {
-    final dir = await getApplicationDocumentsDirectory();
-    return File('${dir.path}/solves.json');
+  @override
+  void dispose() {
+    SolvesStore().removeListener(_onSolvesChanged);
+    super.dispose();
   }
 
-  Future<void> _saveSolves() async {
-    final file = await _localFile;
-    await file.writeAsString(jsonEncode(solves));
-  }
+  void _onSolvesChanged() => setState(() {});
 
-  Future<void> _loadSolves() async {
-    try {
-      final file = await _localFile;
-      if (await file.exists()) {
-        final contents = await file.readAsString();
-        final List<dynamic> jsonList = jsonDecode(contents);
-        setState(() {
-          solves = jsonList.cast<Map<String, dynamic>>().map((e) => {
-            'time': e['time'] as String,
-            'date': e['date'] as String,
-          }).toList();
-        });
-      }
-    } catch (_) {}
+  // Only today's solves for display
+  List<Map<String, String>> get todaySolves {
+    final today = DateTime.now();
+    return SolvesStore().solves.where((solve) {
+      final solveDate = DateTime.parse(solve['date']!);
+      return solveDate.year == today.year &&
+             solveDate.month == today.month &&
+             solveDate.day == today.day;
+    }).toList();
   }
 
   void _startStop() {
@@ -74,7 +66,7 @@ class _HomePageState extends State<HomePage> {
       _stopwatch.stop();
       _stopwatch.reset();
       _timer?.cancel();
-      _displayTime = '00:00.000';
+      _displayTime = '00:00.00';
     });
   }
 
@@ -91,31 +83,54 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _addSolve(String time) {
-    setState(() {
-      solves.add({
-        'time': time,
-        'date': DateTime.now().toIso8601String(),
-      });
+    SolvesStore().addSolve({
+      'time': time,
+      'date': DateTime.now().toIso8601String(),
+      // Optionally store scramble: 'scramble': _scramble,
     });
-    _saveSolves();
+    _generateScramble(); // Generate new scramble after each solve
   }
 
   void _deleteSolve(int index) {
-    setState(() {
-      solves.removeAt(index);
-    });
-    _saveSolves();
+    final solves = todaySolves;
+    if (index >= 0 && index < solves.length) {
+      SolvesStore().deleteSolve(solves[index]);
+    }
   }
 
   int getSolveCount() {
-    return solves.length;
+    return todaySolves.length;
+  }
+
+  void _generateScramble() {
+    const moves = ['R', 'L', 'U', 'D', 'F', 'B'];
+    const suffixes = ['', '\'', '2'];
+    final scramble = <String>[];
+    String? lastMove;
+
+    final random = DateTime.now().millisecondsSinceEpoch;
+    int seed = random;
+    int nextRand() => seed = 1103515245 * seed + 12345 & 0x7fffffff;
+
+    for (int i = 0; i < 20; i++) {
+      String move;
+      do {
+        move = moves[nextRand() % moves.length];
+      } while (move == lastMove);
+      lastMove = move;
+      final suffix = suffixes[nextRand() % suffixes.length];
+      scramble.add(move + suffix);
+    }
+    setState(() {
+      _scramble = scramble.join(' ');
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           GestureDetector(
             onTapDown: (details) {
@@ -123,6 +138,12 @@ class _HomePageState extends State<HomePage> {
                 setState(() {
                   timerState = 1;
                   _reset();
+                });
+              } else if (timerState == 2) {
+                setState(() {
+                  timerState = 0;
+                  _startStop();
+                  _addSolve(_displayTime);
                 });
               }
             },
@@ -175,9 +196,24 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+          // --- Scramble display ---
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32.0),
+            child: Text(
+              _scramble,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontFamily: 'OpenRunde',
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
+          ),
+          // --- Time list ---
           SizedBox(
             height: 120,
-            child: solves.isEmpty
+            child: todaySolves.isEmpty
                 ? Center(child: Text('No times yet', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)))
                 : solveList(),
           ),
@@ -200,7 +236,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget solveList() {
-    if (solves.isEmpty) {
+    if (todaySolves.isEmpty) {
       return Text("No Solves Yet");
     }
 
@@ -216,10 +252,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildRecentSolves() {
-    if (solves.isEmpty) return SizedBox();
-    List<Map<String, String>> recent = solves.length <= 3
-        ? solves
-        : solves.sublist(solves.length - 3);
+    if (todaySolves.isEmpty) return SizedBox();
+    List<Map<String, String>> recent = todaySolves.length <= 3
+        ? todaySolves
+        : todaySolves.sublist(todaySolves.length - 3);
     return Column(
       children: [
         for (int i = 0; i < recent.length; i++)
@@ -232,7 +268,7 @@ class _HomePageState extends State<HomePage> {
               fontWeight: FontWeight.w700,
             ),
           ),
-        if (solves.length > 3)
+        if (todaySolves.length > 3)
           Text(
             "Tap to view all solves",
             style: TextStyle(
@@ -256,9 +292,9 @@ class _HomePageState extends State<HomePage> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: solves.length,
+              itemCount: todaySolves.length,
               itemBuilder: (context, index) {
-                final solve = solves[index];
+                final solve = todaySolves[index];
                 return ListTile(
                   title: Text(
                     solve['time']!,
