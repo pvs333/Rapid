@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'dart:convert';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../solves_store.dart';
 import '../pages/settingspage.dart'; // Add this import at the top
@@ -19,7 +15,7 @@ class StatsPage extends StatefulWidget {
 class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   Map<DateTime, List<Map<String, String>>> _solvesByDate = {};
-  DateTime _focusedDay = DateTime.now();
+  final DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   List<Map<String, String>> _selectedSolves = [];
 
@@ -60,18 +56,6 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
   }
 
   DateTime _selectedDayOnly(DateTime day) => DateTime(day.year, day.month, day.day);
-
-  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    setState(() {
-      _selectedDay = selectedDay;
-      _focusedDay = focusedDay;
-      _selectedSolves = _solvesByDate[_selectedDayOnly(selectedDay)] ?? [];
-    });
-  }
-
-  Future<void> _deleteSolve(Map<String, String> solve) async {
-    SolvesStore().deleteSolve(solve);
-  }
 
   // --- Stats helpers ---
   double _parseTime(String time) {

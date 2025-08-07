@@ -282,7 +282,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildFullSolveList() {
-    return Container(
+    return SizedBox(
       height: 400,
       child: Column(
         children: [
@@ -290,8 +290,7 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.all(16.0),
             child: Text("All Solves", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           ),
-          Expanded(
-            child: ListView.builder(
+           ListView.builder(
               itemCount: todaySolves.length,
               itemBuilder: (context, index) {
                 final solve = todaySolves[index];
@@ -314,7 +313,7 @@ class _HomePageState extends State<HomePage> {
                 );
               },
             ),
-          ),
+          
         ],
       ),
     );
