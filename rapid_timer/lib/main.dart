@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rapid_timer/pages/first_page.dart';
-import 'package:rapid_timer/pages/homepage.dart';
-import 'package:rapid_timer/pages/settingspage.dart';
+import 'package:Rapid/pages/first_page.dart';
+import 'package:Rapid/pages/homepage.dart';
+import 'package:Rapid/pages/settingspage.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'solves_store.dart';
 

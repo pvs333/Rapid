@@ -112,7 +112,7 @@ class _HomePageState extends State<HomePage> {
     int seed = random;
     int nextRand() => seed = 1103515245 * seed + 12345 & 0x7fffffff;
 
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 15; i++) {
       String move;
       do {
         move = moves[nextRand() % moves.length];
@@ -161,7 +161,6 @@ class _HomePageState extends State<HomePage> {
                 });
               }
             },
-            child: Expanded(
               child: Center(
                 child: Container(
                   height: 300,
@@ -193,7 +192,7 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
-              ),
+              
             ),
           ),
           // --- Scramble display ---
@@ -290,7 +289,8 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.all(16.0),
             child: Text("All Solves", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           ),
-           ListView.builder(
+          Expanded( // <-- Added Expanded here
+            child: ListView.builder(
               itemCount: todaySolves.length,
               itemBuilder: (context, index) {
                 final solve = todaySolves[index];
@@ -313,7 +313,7 @@ class _HomePageState extends State<HomePage> {
                 );
               },
             ),
-          
+          ),
         ],
       ),
     );

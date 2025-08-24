@@ -1,5 +1,5 @@
-name: rapid_timer
-description: "A new Flutter project."
+name: Rapid
+description: "A minimal speedcube timer"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -40,6 +40,7 @@ dependencies:
   shared_preferences: ^2.0.15
   table_calendar: ^3.0.9
   fl_chart: ^0.66.0
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -105,3 +106,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: "AppIcon"
+  image_path: "icon/icon.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true

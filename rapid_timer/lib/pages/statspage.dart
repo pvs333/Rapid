@@ -323,8 +323,10 @@ class _StatBox extends StatelessWidget {
   const _StatBox({required this.label, required this.value});
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final boxWidth = screenWidth * 0.43; // Adjust fraction as needed
     return Container(
-      width: 180,
+      width: boxWidth,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.onPrimary,

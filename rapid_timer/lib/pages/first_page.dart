@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:rapid_timer/pages/calendarpage.dart';
-import 'package:rapid_timer/pages/homepage.dart';
-import 'package:rapid_timer/pages/settingspage.dart';
-import 'package:rapid_timer/pages/statspage.dart';
+import 'package:Rapid/pages/calendarpage.dart';
+import 'package:Rapid/pages/homepage.dart';
+import 'package:Rapid/pages/settingspage.dart';
+import 'package:Rapid/pages/statspage.dart';
 
 class FirstPage extends StatefulWidget{
   const FirstPage({super.key});
