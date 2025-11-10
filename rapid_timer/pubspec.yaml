@@ -41,6 +41,10 @@ dependencies:
   table_calendar: ^3.0.9
   fl_chart: ^0.66.0
   flutter_launcher_icons: ^0.14.4
+  # Firebase core services
+  firebase_core: ^3.5.0
+  cloud_firestore: ^5.4.4
+  firebase_auth: ^5.2.0
 
 dev_dependencies:
   flutter_test:

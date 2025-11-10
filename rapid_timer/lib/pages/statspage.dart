@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../solves_store.dart';
 import '../pages/settingspage.dart'; // Add this import at the top
 
-
 class StatsPage extends StatefulWidget {
   const StatsPage({super.key});
 
@@ -12,7 +11,9 @@ class StatsPage extends StatefulWidget {
   State<StatsPage> createState() => _StatsPageState();
 }
 
-class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMixin {
+class _StatsPageState extends State<StatsPage>
+    with SingleTickerProviderStateMixin {
+  // Only one tab currently; remove TabController usage to fix mismatch error.
   late TabController _tabController;
   Map<DateTime, List<Map<String, String>>> _solvesByDate = {};
   final DateTime _focusedDay = DateTime.now();
@@ -22,7 +23,7 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 1, vsync: this);
     SolvesStore().addListener(_onSolvesChanged);
     _loadAllSolves();
   }
@@ -55,7 +56,8 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
     });
   }
 
-  DateTime _selectedDayOnly(DateTime day) => DateTime(day.year, day.month, day.day);
+  DateTime _selectedDayOnly(DateTime day) =>
+      DateTime(day.year, day.month, day.day);
 
   // --- Stats helpers ---
   double _parseTime(String time) {
@@ -69,12 +71,15 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
 
   double? _bestTime(List<Map<String, String>> solves) {
     if (solves.isEmpty) return null;
-    return solves.map((s) => _parseTime(s['time']!)).reduce((a, b) => a < b ? a : b);
+    return solves
+        .map((s) => _parseTime(s['time']!))
+        .reduce((a, b) => a < b ? a : b);
   }
 
   double? _averageTime(List<Map<String, String>> solves) {
     if (solves.isEmpty) return null;
-    return solves.map((s) => _parseTime(s['time']!)).reduce((a, b) => a + b) / solves.length;
+    return solves.map((s) => _parseTime(s['time']!)).reduce((a, b) => a + b) /
+        solves.length;
   }
 
   List<Map<String, String>> get _allSolves {
@@ -82,16 +87,24 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
   }
 
   List<double> _getDayTimes(DateTime day) {
-    return (_solvesByDate[_selectedDayOnly(day)] ?? []).map((s) => _parseTime(s['time']!)).toList();
+    return (_solvesByDate[_selectedDayOnly(day)] ?? [])
+        .map((s) => _parseTime(s['time']!))
+        .toList();
   }
 
   List<double> _getLast7Averages() {
     final now = DateTime.now();
     List<double> avgs = [];
     for (int i = 6; i >= 0; i--) {
-      final day = DateTime(now.year, now.month, now.day).subtract(Duration(days: i));
+      final day = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: i));
       final times = _getDayTimes(day);
-      avgs.add(times.isEmpty ? 0 : times.reduce((a, b) => a + b) / times.length);
+      avgs.add(
+        times.isEmpty ? 0 : times.reduce((a, b) => a + b) / times.length,
+      );
     }
     return avgs;
   }
@@ -130,7 +143,6 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
     return Scaffold(
       body: Column(
         children: [
-          
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -144,14 +156,19 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.local_fire_department, color: Colors.orange, size: 28),
+                          Icon(
+                            Icons.local_fire_department,
+                            color: Colors.orange,
+                            size: 28,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             "${_getStreak()} day streak",
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.orange,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: Colors.orange,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                         ],
                       ),
@@ -175,8 +192,9 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
                         children: [
                           _StatBox(
                             label: "Avg Today",
-                            value: _formatSeconds(_averageTime(_selectedSolves)),
-                            
+                            value: _formatSeconds(
+                              _averageTime(_selectedSolves),
+                            ),
                           ),
                           _StatBox(
                             label: "Avg Ever",
@@ -185,43 +203,83 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
                         ],
                       ),
                       const SizedBox(height: 24),
-                      Text("Today's Solves", style:  GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w900)),
+                      Text(
+                        "Today's Solves",
+                        style: GoogleFonts.montserrat(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
                       // --- Today's Solves Graph ---
                       SizedBox(
                         height: 160,
                         child: _selectedSolves.length < 2
                             ? Center(child: Text('Not Enough Solves Today'))
                             : Padding(
-                                padding: EdgeInsets.only(top:8, bottom: 8, right: 8),
+                                padding: EdgeInsets.only(
+                                  top: 8,
+                                  bottom: 8,
+                                  right: 8,
+                                ),
                                 child: ValueListenableBuilder<bool>(
                                   valueListenable: SettingsStore.detailedGraph,
                                   builder: (context, detailed, _) => LineChart(
                                     LineChartData(
                                       lineBarsData: [
                                         LineChartBarData(
-                                          spots: _getDayTimes(_selectedDay ?? DateTime.now())
-                                              .asMap()
-                                              .entries
-                                              .map((e) => FlSpot(e.key.toDouble(), e.value))
-                                              .toList(),
-                                          color: Theme.of(context).colorScheme.primary,
+                                          spots:
+                                              _getDayTimes(
+                                                    _selectedDay ??
+                                                        DateTime.now(),
+                                                  )
+                                                  .asMap()
+                                                  .entries
+                                                  .map(
+                                                    (e) => FlSpot(
+                                                      e.key.toDouble(),
+                                                      e.value,
+                                                    ),
+                                                  )
+                                                  .toList(),
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
                                           barWidth: 3,
                                         ),
                                       ],
                                       titlesData: FlTitlesData(
                                         leftTitles: AxisTitles(
-                                          sideTitles: SideTitles(showTitles: detailed, reservedSize: 40),
+                                          sideTitles: SideTitles(
+                                            showTitles: detailed,
+                                            reservedSize: 40,
+                                          ),
                                         ),
                                         bottomTitles: AxisTitles(
-                                          sideTitles: SideTitles(showTitles: detailed, reservedSize: 28, interval: 1),
+                                          sideTitles: SideTitles(
+                                            showTitles: detailed,
+                                            reservedSize: 28,
+                                            interval: 1,
+                                          ),
                                         ),
-                                        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: detailed)),
-                                        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: detailed)),
+                                        rightTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: detailed,
+                                          ),
+                                        ),
+                                        topTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: detailed,
+                                          ),
+                                        ),
                                       ),
                                       gridData: FlGridData(show: detailed),
                                       borderData: FlBorderData(
                                         show: detailed,
-                                        border: Border.all(color: detailed ? Theme.of(context).dividerColor : Colors.transparent),
+                                        border: Border.all(
+                                          color: detailed
+                                              ? Theme.of(context).dividerColor
+                                              : Colors.transparent,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -229,8 +287,14 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
                               ),
                       ),
                       const SizedBox(height: 24),
-                      Text("Last Week Avg", style:  GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.w900)),
-                      
+                      Text(
+                        "Last Week Avg",
+                        style: GoogleFonts.montserrat(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+
                       // --- Last Week Avg Graph ---
                       SizedBox(
                         height: 160,
@@ -238,16 +302,27 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
                           final now = DateTime.now();
                           int daysWithSolves = 0;
                           for (int i = 6; i >= 0; i--) {
-                            final day = DateTime(now.year, now.month, now.day).subtract(Duration(days: i));
-                            if ((_solvesByDate[_selectedDayOnly(day)] ?? []).isNotEmpty) {
+                            final day = DateTime(
+                              now.year,
+                              now.month,
+                              now.day,
+                            ).subtract(Duration(days: i));
+                            if ((_solvesByDate[_selectedDayOnly(day)] ?? [])
+                                .isNotEmpty) {
                               daysWithSolves++;
                             }
                           }
                           if (daysWithSolves < 2) {
-                            return Center(child: Text('Needs At Least 2 Days of Solves'));
+                            return Center(
+                              child: Text('Needs At Least 2 Days of Solves'),
+                            );
                           }
                           return Padding(
-                            padding: EdgeInsets.only(top:8, bottom: 8, right: 8),
+                            padding: EdgeInsets.only(
+                              top: 8,
+                              bottom: 8,
+                              right: 8,
+                            ),
                             child: ValueListenableBuilder<bool>(
                               valueListenable: SettingsStore.detailedGraph,
                               builder: (context, detailed, _) => LineChart(
@@ -257,16 +332,26 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
                                       spots: _getLast7Averages()
                                           .asMap()
                                           .entries
-                                          .map((e) => FlSpot((e.key + 1).toDouble(), e.value))
+                                          .map(
+                                            (e) => FlSpot(
+                                              (e.key + 1).toDouble(),
+                                              e.value,
+                                            ),
+                                          )
                                           .toList(),
-                                      color: Theme.of(context).colorScheme.secondary,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.secondary,
                                       barWidth: 3,
                                       dotData: FlDotData(show: true),
                                     ),
                                   ],
                                   titlesData: FlTitlesData(
                                     leftTitles: AxisTitles(
-                                      sideTitles: SideTitles(showTitles: detailed, reservedSize: 40),
+                                      sideTitles: SideTitles(
+                                        showTitles: detailed,
+                                        reservedSize: 40,
+                                      ),
                                     ),
                                     bottomTitles: AxisTitles(
                                       sideTitles: SideTitles(
@@ -274,7 +359,11 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
                                         reservedSize: 28,
                                         interval: 1,
                                         getTitlesWidget: (value, meta) {
-                                          if (!detailed || value < 1 || value > 7 || value % 1 != 0) return const SizedBox.shrink();
+                                          if (!detailed ||
+                                              value < 1 ||
+                                              value > 7 ||
+                                              value % 1 != 0)
+                                            return const SizedBox.shrink();
                                           return Padding(
                                             padding: EdgeInsets.only(
                                               left: value == 1 ? 8 : 0,
@@ -283,18 +372,32 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
                                             ),
                                             child: Text(
                                               value.toInt().toString(),
-                                              style: Theme.of(context).textTheme.bodySmall,
+                                              style: Theme.of(
+                                                context,
+                                              ).textTheme.bodySmall,
                                             ),
                                           );
                                         },
                                       ),
                                     ),
-                                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: detailed)),
-                                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: detailed)),
+                                    rightTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: detailed,
+                                      ),
+                                    ),
+                                    topTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: detailed,
+                                      ),
+                                    ),
                                   ),
                                   borderData: FlBorderData(
                                     show: detailed,
-                                    border: Border.all(color: detailed ? Theme.of(context).dividerColor : Colors.transparent),
+                                    border: Border.all(
+                                      color: detailed
+                                          ? Theme.of(context).dividerColor
+                                          : Colors.transparent,
+                                    ),
                                   ),
                                   gridData: FlGridData(show: detailed),
                                   minX: 1,
@@ -334,9 +437,18 @@ class _StatBox extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(label, style:  GoogleFonts.montserrat( fontWeight: FontWeight.w900)),
+          Text(
+            label,
+            style: GoogleFonts.montserrat(fontWeight: FontWeight.w900),
+          ),
           const SizedBox(height: 4),
-          Text(value, style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, fontSize: 24)),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 24,
+            ),
+          ),
         ],
       ),
     );

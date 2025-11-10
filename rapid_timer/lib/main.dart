@@ -1,4 +1,5 @@
 // ignore_for_file: must_be_immutable
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,10 +8,14 @@ import 'package:Rapid/pages/homepage.dart';
 import 'package:Rapid/pages/settingspage.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'solves_store.dart';
+import 'services/firebase_sync_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SolvesStore().load();
+  // Start Firebase sync in the background; the app works offline if not configured.
+  FirebaseSyncService.instance.onRemoteUpdate = SolvesStore().mergeRemoteSolves;
+  unawaited(FirebaseSyncService.instance.init());
   runApp(MyApp());
 }
 
@@ -40,40 +45,84 @@ class MyApp extends StatelessWidget {
               return MaterialApp(
                 theme: ThemeData(
                   useMaterial3: true,
-                  colorScheme: lightDynamic ?? ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-                  textTheme: GoogleFonts.montserratTextTheme().copyWith(
-                    bodyLarge: TextStyle(fontFamily: 'OpenRunde'),
-                    bodyMedium: TextStyle(fontFamily: 'OpenRunde'),
-                    bodySmall: TextStyle(fontFamily: 'OpenRunde'),
-                  ).apply(
-                    bodyColor: (lightDynamic ?? ColorScheme.fromSeed(seedColor: Colors.deepPurple)).onSurface,
-                    displayColor: (lightDynamic ?? ColorScheme.fromSeed(seedColor: Colors.deepPurple)).onSurface,
-                  ),
+                  colorScheme:
+                      lightDynamic ??
+                      ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+                  textTheme: GoogleFonts.montserratTextTheme()
+                      .copyWith(
+                        bodyLarge: TextStyle(fontFamily: 'OpenRunde'),
+                        bodyMedium: TextStyle(fontFamily: 'OpenRunde'),
+                        bodySmall: TextStyle(fontFamily: 'OpenRunde'),
+                      )
+                      .apply(
+                        bodyColor:
+                            (lightDynamic ??
+                                    ColorScheme.fromSeed(
+                                      seedColor: Colors.deepPurple,
+                                    ))
+                                .onSurface,
+                        displayColor:
+                            (lightDynamic ??
+                                    ColorScheme.fromSeed(
+                                      seedColor: Colors.deepPurple,
+                                    ))
+                                .onSurface,
+                      ),
                   appBarTheme: AppBarTheme(
                     titleTextStyle: GoogleFonts.montserrat(
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
-                      color: (lightDynamic ?? ColorScheme.fromSeed(seedColor: Colors.deepPurple)).onSurface,
+                      color:
+                          (lightDynamic ??
+                                  ColorScheme.fromSeed(
+                                    seedColor: Colors.deepPurple,
+                                  ))
+                              .onSurface,
                     ),
                     centerTitle: true,
                   ),
                 ),
                 darkTheme: ThemeData(
                   useMaterial3: true,
-                  colorScheme: darkDynamic ?? ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark),
-                  textTheme: GoogleFonts.montserratTextTheme().copyWith(
-                    bodyLarge: TextStyle(fontFamily: 'OpenRunde'),
-                    bodyMedium: TextStyle(fontFamily: 'OpenRunde'),
-                    bodySmall: TextStyle(fontFamily: 'OpenRunde'),
-                  ).apply(
-                    bodyColor: (darkDynamic ?? ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark)).onSurface,
-                    displayColor: (darkDynamic ?? ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark)).onSurface,
-                  ),
+                  colorScheme:
+                      darkDynamic ??
+                      ColorScheme.fromSeed(
+                        seedColor: Colors.deepPurple,
+                        brightness: Brightness.dark,
+                      ),
+                  textTheme: GoogleFonts.montserratTextTheme()
+                      .copyWith(
+                        bodyLarge: TextStyle(fontFamily: 'OpenRunde'),
+                        bodyMedium: TextStyle(fontFamily: 'OpenRunde'),
+                        bodySmall: TextStyle(fontFamily: 'OpenRunde'),
+                      )
+                      .apply(
+                        bodyColor:
+                            (darkDynamic ??
+                                    ColorScheme.fromSeed(
+                                      seedColor: Colors.deepPurple,
+                                      brightness: Brightness.dark,
+                                    ))
+                                .onSurface,
+                        displayColor:
+                            (darkDynamic ??
+                                    ColorScheme.fromSeed(
+                                      seedColor: Colors.deepPurple,
+                                      brightness: Brightness.dark,
+                                    ))
+                                .onSurface,
+                      ),
                   appBarTheme: AppBarTheme(
                     titleTextStyle: GoogleFonts.montserrat(
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
-                      color: (darkDynamic ?? ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark)).onSurface,
+                      color:
+                          (darkDynamic ??
+                                  ColorScheme.fromSeed(
+                                    seedColor: Colors.deepPurple,
+                                    brightness: Brightness.dark,
+                                  ))
+                              .onSurface,
                     ),
                     centerTitle: true,
                   ),
