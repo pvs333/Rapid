@@ -1,7 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'services/firebase_sync_service.dart';
 
 class SolvesStore extends ChangeNotifier {
@@ -14,17 +13,14 @@ class SolvesStore extends ChangeNotifier {
 
   List<Map<String, String>> get solves => List.unmodifiable(_solves);
 
-  Future<File> get _localFile async {
-    final dir = await getApplicationDocumentsDirectory();
-    return File('${dir.path}/solves.json');
-  }
+  static const _prefsKey = 'solves_json';
 
   Future<void> load() async {
     if (_loaded) return;
     try {
-      final file = await _localFile;
-      if (await file.exists()) {
-        final contents = await file.readAsString();
+      final prefs = await SharedPreferences.getInstance();
+      final contents = prefs.getString(_prefsKey);
+      if (contents != null && contents.isNotEmpty) {
         final List<dynamic> jsonList = jsonDecode(contents);
         _solves = jsonList
             .map<Map<String, String>>(
@@ -32,7 +28,9 @@ class SolvesStore extends ChangeNotifier {
             )
             .toList();
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[SolvesStore] load error: $e');
+    }
     _loaded = true;
     // Wire up remote updates -> local merge
     FirebaseSyncService.instance.onRemoteUpdate = mergeRemoteSolves;
@@ -40,8 +38,12 @@ class SolvesStore extends ChangeNotifier {
   }
 
   Future<void> save() async {
-    final file = await _localFile;
-    await file.writeAsString(jsonEncode(_solves));
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_prefsKey, jsonEncode(_solves));
+    } catch (e) {
+      debugPrint('[SolvesStore] save error: $e');
+    }
   }
 
   void addSolve(Map<String, String> solve) {
