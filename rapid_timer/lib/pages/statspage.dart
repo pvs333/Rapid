@@ -362,8 +362,9 @@ class _StatsPageState extends State<StatsPage>
                                           if (!detailed ||
                                               value < 1 ||
                                               value > 7 ||
-                                              value % 1 != 0)
+                                              value % 1 != 0) {
                                             return const SizedBox.shrink();
+                                          }
                                           return Padding(
                                             padding: EdgeInsets.only(
                                               left: value == 1 ? 8 : 0,
